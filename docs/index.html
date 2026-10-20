@@ -41,6 +41,9 @@ main{max-width:1100px;margin:0 auto;padding:10px 20px 60px}
 #lb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
 #lb .sc{font-variant-numeric:tabular-nums;font-weight:900;color:var(--b)}
 #lb .em{color:var(--mut);padding:10px 2px}
+#lbk{display:block;margin:0 0 28px;background:var(--card);border:2px solid var(--line);border-top:4px solid var(--a);border-radius:6px 6px 14px 14px;padding:16px 18px;color:var(--fg);text-decoration:none;font-size:20px;font-weight:900}
+#lbk small{display:block;color:var(--mut);font-size:14px;font-weight:400;margin-top:2px}
+#lbk:hover,#lbk:focus-visible{border-color:var(--a);outline:0}
 .w{display:flex;flex-direction:column}
 .w .g{flex:1}
 .tm{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px 0;font-size:13px;color:var(--mut)}
@@ -56,7 +59,7 @@ main{max-width:1100px;margin:0 auto;padding:10px 20px 60px}
   <input id="q" type="search" placeholder="Buscar juego" aria-label="Buscar juego">
 </header>
 <main>
-  <section id="lb" aria-labelledby="lbt"><h2 id="lbt">🏆 Clasificación · Escapa de JOSE</h2><p class="sub">Mejores puntuaciones de este dispositivo. Entra al juego, pon tu nombre y escapa.</p><ol id="lbl"></ol></section>
+  <a id="lbk" href="clasificacion.html">🏆 Ver clasificación <small>Puntos, combos y monedas por dificultad y dispositivo</small></a>
   <div id="grid"></div>
   <div id="st" hidden></div>
 </main>
@@ -188,19 +191,8 @@ function tick(){
 setInterval(tick,1000);
 document.addEventListener('visibilitychange',()=>{lastTick=Date.now()});
 
-/* ---------- clasificación (Escapa de JOSE) ---------- */
-const LB_KEY='jh-lb-escapa-de-jose';
-function renderLB(){
-  let a=[];try{a=JSON.parse(store.get(LB_KEY)||'[]')}catch(e){}
-  if(!Array.isArray(a))a=[];
-  a.sort((x,y)=>y.score-x.score);
-  const ol=$('lbl');
-  if(!a.length){ol.innerHTML='<li class="em" style="display:block;background:none">Aún no hay puntuaciones. ¡Sé el primero!</li>';return}
-  const med=['🥇','🥈','🥉'];
-  ol.innerHTML=a.slice(0,10).map((e,i)=>`<li><span class="rk">${med[i]||i+1}</span><span class="nm">${esc(String(e.name))}</span><span class="sc">${(+e.score||0).toLocaleString('es')}</span></li>`).join('');
-}
-addEventListener('storage',e=>{if(e.key==LB_KEY)renderLB();if(e.key&&e.key.startsWith('jh-time-'))refreshTimes()});
-renderLB();
+function renderLB(){}
+addEventListener('storage',e=>{if(e.key&&e.key.startsWith('jh-time-'))refreshTimes()});
 
 /* ---------- 3) reproductor ---------- */
 function open_(g){
