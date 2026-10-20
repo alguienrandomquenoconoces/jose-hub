@@ -31,6 +31,22 @@ main{max-width:1100px;margin:0 auto;padding:10px 20px 60px}
 #bar button,#bar a{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}
 #bar button:hover,#bar a:hover{border-color:var(--a)}
 #fr{flex:1;width:100%;border:0;background:#000}
+#lb{margin:0 0 28px;background:var(--card);border:2px solid var(--line);border-radius:6px 6px 14px 14px;border-top:4px solid var(--a);padding:16px 18px 14px}
+#lb h2{margin:0 0 2px;font-size:22px;font-weight:900}
+#lb .sub{color:var(--mut);font-size:14px;margin:0 0 12px}
+#lb ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#lb li{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-radius:8px;background:#ffffff0a}
+#lb li:nth-child(-n+3){background:#ffb7031a}
+#lb .rk{font-weight:900;color:var(--a);text-align:center}
+#lb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+#lb .sc{font-variant-numeric:tabular-nums;font-weight:900;color:var(--b)}
+#lb .em{color:var(--mut);padding:10px 2px}
+.w{display:flex;flex-direction:column}
+.w .g{flex:1}
+.tm{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px 0;font-size:13px;color:var(--mut)}
+.tm output{white-space:nowrap;color:var(--fg);font-weight:700;font-variant-numeric:tabular-nums}
+.tm select{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:3px 6px;font:inherit;font-size:13px}
+.tm select:focus-visible{border-color:var(--b);outline:0}
 @media (prefers-reduced-motion:reduce){.g{transition:none}}
 </style>
 </head>
@@ -40,6 +56,7 @@ main{max-width:1100px;margin:0 auto;padding:10px 20px 60px}
   <input id="q" type="search" placeholder="Buscar juego" aria-label="Buscar juego">
 </header>
 <main>
+  <section id="lb" aria-labelledby="lbt"><h2 id="lbt">🏆 Clasificación · Escapa de JOSE</h2><p class="sub">Mejores puntuaciones de este dispositivo. Entra al juego, pon tu nombre y escapa.</p><ol id="lbl"></ol></section>
   <div id="grid"></div>
   <div id="st" hidden></div>
 </main>
@@ -124,10 +141,11 @@ function render(){
   const q=$('q').value.trim().toLowerCase(),list=GAMES.filter(g=>g.name.toLowerCase().includes(q)),grid=$('grid');
   grid.innerHTML='';
   for(const g of list){
+    const w=document.createElement('div');w.className='w';
     const b=document.createElement('button');b.className='g';b.onclick=()=>open_(g);
     b.appendChild(cover(g));
     const t=document.createElement('div');t.className='t';t.innerHTML=`<b>${esc(g.name)}</b><small>Jugar</small>`;
-    b.appendChild(t);grid.appendChild(b);
+    b.appendChild(t);w.appendChild(b);w.appendChild(timeBox(g));grid.appendChild(w);
   }
   const st=$('st');
   if(!GAMES.length){st.hidden=false;st.innerHTML=`No encuentro juegos todavía.<br>Sube tus archivos <code>.html</code> a la carpeta <code>${esc(CONFIG.folder)}/</code> de tu repositorio y aparecerán aquí solos.`}
@@ -136,13 +154,62 @@ function render(){
   $('cnt').textContent=GAMES.length?`${GAMES.length} ${GAMES.length==1?'juego':'juegos'}`:'Sin juegos';
 }
 
+/* ---------- tiempo jugado (por juego, se guarda en este navegador) ---------- */
+const TK=id=>'jh-time-'+id,UK='jh-unit';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const getSecs=id=>+store.get(TK(id))||0;
+function fmtTime(sec,u){
+  sec=Math.floor(sec);
+  if(u=='h')return (sec/3600).toLocaleString('es',{maximumFractionDigits:2})+' h';
+  if(u=='m')return (sec/60).toLocaleString('es',{maximumFractionDigits:1})+' min';
+  if(u=='s')return sec.toLocaleString('es')+' s';
+  return `${Math.floor(sec/3600)} h ${Math.floor(sec%3600/60)} min ${sec%60} s`;
+}
+function timeBox(g){
+  const d=document.createElement('div');d.className='tm';
+  const out=document.createElement('output');out.dataset.id=g.id;
+  const sel=document.createElement('select');sel.setAttribute('aria-label','Unidad de tiempo de '+g.name);
+  [['t','Total'],['h','Horas'],['m','Minutos'],['s','Segundos']].forEach(([v,l])=>sel.add(new Option(l,v)));
+  sel.value=store.get(UK+'-'+g.id)||store.get(UK)||'t';
+  const upd=()=>{out.textContent='⏱ '+fmtTime(getSecs(g.id),sel.value)};
+  sel.onchange=()=>{store.set(UK+'-'+g.id,sel.value);upd()};
+  out.upd=upd;upd();
+  d.append(out,sel);
+  return d;
+}
+function refreshTimes(){document.querySelectorAll('.tm output').forEach(o=>o.upd&&o.upd())}
+let cur=null,lastTick=0;
+function tick(){
+  if(!cur)return;
+  const n=Date.now(),dt=(n-lastTick)/1000;lastTick=n;
+  if(!document.hidden&&dt>0&&dt<5){store.set(TK(cur.id),getSecs(cur.id)+dt);}
+  refreshTimes();
+}
+setInterval(tick,1000);
+document.addEventListener('visibilitychange',()=>{lastTick=Date.now()});
+
+/* ---------- clasificación (Escapa de JOSE) ---------- */
+const LB_KEY='jh-lb-escapa-de-jose';
+function renderLB(){
+  let a=[];try{a=JSON.parse(store.get(LB_KEY)||'[]')}catch(e){}
+  if(!Array.isArray(a))a=[];
+  a.sort((x,y)=>y.score-x.score);
+  const ol=$('lbl');
+  if(!a.length){ol.innerHTML='<li class="em" style="display:block;background:none">Aún no hay puntuaciones. ¡Sé el primero!</li>';return}
+  const med=['🥇','🥈','🥉'];
+  ol.innerHTML=a.slice(0,10).map((e,i)=>`<li><span class="rk">${med[i]||i+1}</span><span class="nm">${esc(String(e.name))}</span><span class="sc">${(+e.score||0).toLocaleString('es')}</span></li>`).join('');
+}
+addEventListener('storage',e=>{if(e.key==LB_KEY)renderLB();if(e.key&&e.key.startsWith('jh-time-'))refreshTimes()});
+renderLB();
+
 /* ---------- 3) reproductor ---------- */
 function open_(g){
-  $('pt').textContent=g.name;$('nw').href=enc(g.path);$('fr').src=enc(g.path);
+  cur=g;lastTick=Date.now();$('pt').textContent=g.name;$('nw').href=enc(g.path);$('fr').src=enc(g.path);
   $('pl').classList.add('on');document.body.style.overflow='hidden';
   history.replaceState(null,'','#'+g.id);$('fr').onload=()=>$('fr').focus();
 }
 function close_(){
+  tick();cur=null;renderLB();refreshTimes();
   $('pl').classList.remove('on');$('fr').src='about:blank';document.body.style.overflow='';
   history.replaceState(null,'',location.pathname+location.search);
 }
