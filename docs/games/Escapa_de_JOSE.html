@@ -91,6 +91,8 @@ function upd(dt){
  vlt=false;for(const o of objs)if(o.k=='c'&&!onG&&wx>o.x-16&&wx<o.x+o.w+16&&py<o.y-44+30)vlt=true;
  for(const o of objs){
   if(o.k=='b'&&!o.hit&&wx+12>o.x&&wx-12<o.x+o.w&&py-h<o.y-48&&py>o.y-112){o.hit=true;hurt('¡Cuidado!')}
+  /* hitbox superior: caer encima del bloque cuenta como error */
+  else if(o.k=='b'&&!o.hit&&vy>0&&wx+12>o.x&&wx-12<o.x+o.w&&py>o.y-126&&prev<=o.y-112+8&&py<=o.y-48){o.hit=true;hurt('¡No pises el bloque!')}
   if(!o.done&&wx>o.x+o.w+12){o.done=true;if(!o.hit){if(o.k=='c')trick('¡Vault!',28);else trick(onG&&slide>0?'¡Por debajo!':'¡Por encima!',28)}}}
  for(const q of powerups)if(!q.got&&Math.abs(wx-q.x)<35&&Math.abs(py-32-q.y)<55){q.got=true;
    if(q.type==='shield'){shield=7;inv=Math.max(inv,1);pop('¡ESCUDO!', '#42d9ff')}
