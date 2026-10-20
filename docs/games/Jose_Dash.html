@@ -81,9 +81,31 @@ const gens=[
   if(p<3){for(let i=0;i<=p;i++)spike(X+i,0);X+=9+p}else if(p==3){block(X,0,3,2);X+=11}else{block(X,0,2,1);block(X+2,0,2,2);spike(X+5.5,0);X+=12}}},
  ()=>{for(let n=0;n<NR;n++){const top=rnd()<.5,c=RI(1,3);for(let i=0;i<c;i++)spike(X+i,top?5:0,top);if(rnd()<.5){spike(X+4.5,top?0:5,!top);const q=sp[sp.length-1];q.k=3;q.o=top?-1.05:1.05;q.tr=3.8}X+=8+c*.5}},
  ()=>{gaps(GL,5.5+GD_,9.5,1.5,1.8,10);X+=GL+10}];
-const LV=[['Jose Madness',1,0,[0,1],0,0],['Otra Vez',2,60,[0,1,0],0,0],['Polar Jose',3,120,[0,2,1],0,0],['Seco y Pincho',3,300,[0,3,1,0],0,0],['Base tras Base',4,180,[0,1,2,3],0,0],['Sin Soltar',4,20,[0,4,1],1,0],['Saltarín',5,90,[0,2,6],1,0],['Máquina del Tiempo',5,250,[0,7,3,1],1,0],['Ciclos',6,330,[0,2,1,4],1,0],['xPaso',6,150,[0,5,0,6],1,0],['Funky Pincho',7,40,[0,1,3,4,2],1,1],['Teoría de Todo',7,210,[0,2,6,7,3],1,1],['Electro Jose',8,280,[0,1,4,3,7,2],1,1],['Club de Pinchos',8,350,[0,5,4,6,2],1,1],['Electrodinámix',9,110,[1,3,7,4,2,6],1,1],['Hexágono',9,70,[0,6,2,4,7,1],1,1],['Blast Pinchos',10,320,[0,1,2,3,4],1,1],['Teoría de Todo II',10,170,[0,7,6,5,4,3],1,1],['Dominador Geométrico',10,10,[0,5,6,2,3,7,1,4],1,1],['JOJO Dash (Troll)',10,0,[0,1,2,3,4,5,6,7],1,1]];
+const LV=[['Stereo Madness',1,0,'01010',0,0],['Back On Track',2,70,'010101',0,0],['Polargeist',3,140,'0120102',0,0],['Dry Out',3,200,'01031',0,0],['Base After Base',4,260,'0132041',0,0],["Can't Let Go",4,320,'0140140',0,0],['Jumper',5,30,'05206',0,0],['Time Machine',5,100,'0731076',0,0],['Cycles',6,170,'0215263',0,0],['xStep',6,230,'05061',0,0],['Clutterfunk',7,290,'013450',0,0],['Theory of Everything',7,350,'0243605',0,0],['Electroman Adventures',8,50,'01437205',0,0],['Clubstep',8,120,'05461047',0,0],['Electrodynamix',9,190,'1370264',0,0],['Hexagon Force',9,250,'0627143',0,0],['Blast Processing',10,310,'0132456',0,0],['Theory of Everything 2',10,20,'07654321',0,0],['Geometrical Dominator',10,90,'0123456',0,0],['Deadlocked',10,160,'05674312',0,0],['JOJO Dash (Troll)',10,0,[0,1,2,3,4,5,6,7],1,1]];
+/* ---- niveles estilo GD: frases (motivos) por vehículo ---- */
+const CP=[x=>{spike(x+3,0);return 8},x=>{spike(x+3,0);spike(x+4,0);return 9},x=>{for(let k=0;k<3;k++)spike(x+3+k,0);return 10},
+ x=>{block(x+2,0,2,1);spike(x+5.5,0);return 10},x=>{block(x+2,0,2,1);block(x+4,0,2,2);return 10},
+ x=>{pads.push({x:x+2,y:0});for(let k=0;k<3;k++)spike(x+3.2+k,0);return 12},x=>{block(x+2,0,5,1);spike(x+4.5,1);return 11},
+ x=>{spike(x+3,0);spike(x+7,0);spike(x+11,0);return 14},x=>{spike(x+3,0);block(x+6,0,2,1);spike(x+9.5,0);return 13},
+ x=>{block(x+2,0,2,2);block(x+4,0,2,3);spike(x+7.5,0);return 11}];
+const FP=[x=>{spike(x+3,0);spike(x+8,5,1);return 12},x=>{for(let k=0;k<3;k++)spike(x+3+k,0);return 10},x=>{block(x+2,0,2,2);block(x+7,4,2,2);return 12},x=>{spike(x+3,0);spike(x+4,0);spike(x+8,5,1);return 12}];
+function tun(m,len,sty,st){const ch=CH[m],g=[0,5.6,0,5.4,4.8,0,0,5.8][m]-st*.12,step=[0,9,0,9,8,0,0,9.5][m],mid=ch/2,a=Math.min(ch/2-g/2-.3,m==3||m==7?1.8:2.6),dl=m==4?step*.7:3,lo=g/2+.2,hi=ch-g/2-.2,s0=RI(0,9);let c=mid;
+ for(let i=10,k=0;i<len;i+=step,k++){
+  if(sty==0)c=c+R(-dl,dl);else if(sty==1)c=mid+a*Math.sin(k*.7+s0);else if(sty==2)c=mid+(Math.floor(k/2)%2?a:-a)*.9;else c=mid+a*(((k*.37+s0/10)%1)*2-1);
+  c=cl(c,lo,hi);block(X+i,0,1.5,c-g/2);block(X+i,c+g/2,1.5,ch-c-g/2)}
+ X+=len+10}
+function sec(m,len,sty,st){X+=6;
+ if(m==0||m==5||m==2||m==6){const fl=m==2||m==6,L=fl?FP:CP,ord=Array.from({length:fl?FP.length:9},(_,k)=>k).sort(()=>rnd()-.5).slice(0,fl?4:Math.min(9,3+Math.ceil(st/2)));if(m==5)ord.push(9);
+  const mot=[0,1,2,3].map(()=>ord[RI(0,ord.length-1)]),gp=Math.max(0,3-Math.floor(st/3));
+  for(let k=0;k<len;k++){const f=L[rnd()<.25?ord[RI(0,ord.length-1)]:mot[k%4]];X+=f(X)+gp}}
+ else tun(m,len*10,sty,st);
+ X+=4}
+function build2(i){const l=LV[i],st=l[1],ms=l[3],n=ms.length,T=40+st*6;sd=i*7919+101;secs=[];sp=[];bl=[];pads=[];trolls=[];fp=[];flips=[];texts=[];tn=0;X=12;HS=l[2];SP=9.6+st*.38;
+ [...ms].forEach((c,j)=>{const m=+c,x0=X;secs.push({m,x0,x1:0});sec(m,Math.round(T/n*(j%2?.9:1.1)),(i+j*3+RI(0,3))%4,st);secs[j].x1=X;if(j)secs[j-1].x1=x0});
+ X+=8;END=X;portals=secs.slice(1).map((s,k)=>({x:s.x0,m:s.m,i:k+1}));secs[0].x0=-5}
+function tpy(p,gd,h){let y=gd==1?CH[6]-h:h;for(const b of bl){if(b.x>p.x+h||b.x+b.w<p.x-h)continue;if(gd==1&&b.y>p.y&&b.y-h<y)y=b.y-h;if(gd==-1&&b.y+b.h<p.y&&b.y+b.h+h>y)y=b.y+b.h+h}return y}
 const TX=['Fácil','No saltes aquí','Ahora salta →','Ups','JAJAJA','Casi…','Confía en mí','Mira arriba'];
-function build(i){const l=LV[i],st=l[1];sd=i*7919+13;secs=[];sp=[];bl=[];pads=[];trolls=[];fp=[];flips=[];texts=[];tn=0;X=12;
+function build(i){const l=LV[i],st=l[1];if(typeof l[3]=='string')return build2(i);sd=i*7919+13;secs=[];sp=[];bl=[];pads=[];trolls=[];fp=[];flips=[];texts=[];tn=0;X=12;
  GD_=(.5-(st-1)/9)*1.2;NR=Math.round(6+st*1.1);GL=NR*9.5;TM=l[4]?2:99;FL=l[5];HS=l[2];SP=9.6+st*.38;
  l[3].forEach((m,j)=>{const x0=X;secs.push({m,x0,x1:0});gens[m]();secs[j].x1=X;if(j)secs[j-1].x1=x0});
  END=X;portals=secs.slice(1).map((s,k)=>({x:s.x0,m:s.m,i:k+1}));secs[0].x0=-5;portals.push(...fp);
@@ -115,16 +137,16 @@ const ov=(ax,ay,ah,b)=>ax+ah>b.x&&ax-ah<b.x+b.w&&ay+ah>b.y&&ay-ah<b.y+b.h;
 function setMode(m){P.m=m;P.sz=SZ[m];P.gd=1;P.vy=0;P.on=false;P.rt=0;P.sw=-1;trail=[];if(m==0||m==5)P.vy=Math.min(P.vy,0)}
 /* ---------- física ---------- */
 function step(dt){
- const p=P,m=p.m,pr=PR;PR=false;p.t+=dt;p.py=p.y;let h=p.sz/2,gd=p.gd;
+ const p=P,m=p.m,pr=PR;PR=false;p.t+=dt;p.pb=pr?.1:(p.pb>0?p.pb-dt:0);p.py=p.y;let h=p.sz/2,gd=p.gd;
  switch(m){
   case 0:if(p.on&&held){p.vy=gd*22.36;p.on=false}p.vy-=gd*114.96*dt;break;
   case 1:p.vy+=(held?84:-64)*gd*dt;break;
-  case 2:if(pr&&p.on){p.gd=gd=-gd;p.on=false;p.vy=0}p.vy-=gd*69*dt;break;
+  case 2:if(p.pb>0&&p.on){p.pb=0;p.gd=gd=-gd;p.on=false;p.vy=0}p.vy-=gd*69*dt;break;
   case 3:if(pr){p.vy=gd*16}p.vy-=gd*80*dt;break;
   case 4:p.vy=(held?1:-1)*gd*SP;break;
   case 5:if(p.on&&held){p.vy=gd*14;p.on=false;p.rt=.28}
    if(!held)p.rt=0;if(p.rt>0)p.rt-=dt;p.vy-=gd*(p.rt>0?25:90)*dt;break;
-  case 6:if(pr&&p.on){p.y=gd==1?CH[6]-h:h;p.gd=gd=-gd;p.vy=0;p.on=true}else p.vy-=gd*100*dt;break;
+  case 6:if(p.pb>0&&p.on){p.pb=0;p.y=tpy(p,gd,h);p.gd=gd=-gd;p.vy=-gd*3;p.on=true}else p.vy-=gd*100*dt;break;
   case 7:if(pr)p.sw=-p.sw;p.vy+=p.sw*96*dt;break}
  const lim=m==0||m==5?30:m==3?20:m==2?25:m==7?13:15;if(m!=4)p.vy=cl(p.vy,m==1?-12.8:-lim,lim);
  p.x+=SP*dt;p.ra=(p.ra||0)+(-Math.atan2(p.vy,SP)-(p.ra||0))*Math.min(1,dt*14);
@@ -146,7 +168,7 @@ function step(dt){
  for(const s of sp){if(s.k==1||s.x>p.x+2||s.x<p.x-2)continue;const sy=s.y+(s.o||0);
   const y0=s.f?sy+.5:sy+.05,y1=s.f?sy+.95:sy+.5;
   if(p.x+hs>s.x+.38&&p.x-hs<s.x+.62&&p.y+hs>y0&&p.y-hs<y1){if(s.k==2)s.seen=1;die();return}}
- for(const d of pads)if(!d.done&&(m==0||m==5)&&p.x+h>d.x&&p.x-h<d.x+1&&p.y-h<d.y+.4){d.done=true;p.vy=24*gd;p.on=false}
+ for(const d of pads)if(!d.done&&(m==0||m==5)&&p.x>d.x-.1&&p.x<d.x+1.1&&p.y-h<d.y+.5){d.done=true;p.vy=27*gd;p.on=false;p.rt=0}
  for(const o of portals)if(!o.done&&p.x>=o.x){o.done=true;if(!o.fake){setMode(o.m);startSecCur=o.i}}
  if(m==0||m==2){p.rot=p.on?p.rot+(Math.round(p.rot/90)*90-p.rot)*Math.min(1,dt*25):p.rot+(m==2?0:415)*dt*gd}
  if(m==2)p.rot+=SP/.45*57.3*dt*gd*(p.on?1:.4);
