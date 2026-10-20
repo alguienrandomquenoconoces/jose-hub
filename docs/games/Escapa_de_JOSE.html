@@ -134,11 +134,11 @@ function draw(){
  g=X.createRadialGradient(680,150,10,680,150,300);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.25,'rgba(255,236,210,.6)');g.addColorStop(1,'rgba(255,255,255,0)');X.fillStyle=g;X.fillRect(300,-100,760,500);
  X.fillStyle='rgba(255,255,255,.07)';for(let i=0;i<4;i++){const x0=((i*300-cam*.08)%1300+1300)%1300-200;X.beginPath();X.moveTo(x0,-20);X.lineTo(x0+90,-20);X.lineTo(x0-260,H);X.lineTo(x0-380,H);X.fill()}
  for(const [par,col,mn,mx,ex] of [[.12,'#c3cbd1',90,250,0],[.25,'#a9b4bb',70,210,1],[.45,'#86929c',50,160,2]]){
-  const bw=90,o=cam*par,i0=Math.floor(o/bw);
+  const bw=180,o=cam*par,i0=Math.floor(o/bw);
   for(let i=i0;i<i0+W/bw+2;i++){const hh=mn+hs(i*3+par*10)*(mx-mn),bx=i*bw-o;X.fillStyle=col;X.fillRect(bx,H-hh,bw-6,hh);
    if(ex&&hs(i*11)>.7){X.fillRect(bx+60,H-hh-90,12,90);X.fillStyle='rgba(255,255,255,.35)';X.beginPath();X.ellipse(bx+66+Math.sin(t+i)*6,H-hh-100,16,10,0,0,7);X.ellipse(bx+80,H-hh-124,22,12,0,0,7);X.fill()}
    if(ex==2&&hs(i*5)>.78){X.fillStyle=col;X.fillRect(bx+20,H-hh-110,5,110);X.fillRect(bx-30,H-hh-110,120,4);X.fillRect(bx+82,H-hh-110,2,40)}
-   if(ex){X.fillStyle='rgba(20,28,34,.25)';for(let j=0;j<hh/24-1;j++)for(let k=0;k<3;k++)if(hs(i*13+j*7+k*3+par)<.5)X.fillRect(bx+10+k*24,H-hh+10+j*24,9,12)}}}
+   if(ex){X.fillStyle='rgba(20,28,34,.25)';for(let j=0;j<hh/24-1;j++)for(let k=0;k<Math.floor((bw-20)/24);k++)if(hs(i*13+j*7+k*3+par)<.5)X.fillRect(bx+10+k*24,H-hh+10+j*24,9,12)}}}
  for(const p of plats){const x=p.x-cam;if(x>W+60||x+p.w<-60)continue;
   g=X.createLinearGradient(0,p.y,0,H);g.addColorStop(0,'#4d5964');g.addColorStop(1,'#1b2227');X.fillStyle=g;X.fillRect(x,p.y,p.w,H-p.y+30);
   X.fillStyle='rgba(60,72,82,.7)';X.fillRect(x,p.y-24,p.w,2);for(let rx=x+10;rx<x+p.w;rx+=34)X.fillRect(rx,p.y-24,2,24);
