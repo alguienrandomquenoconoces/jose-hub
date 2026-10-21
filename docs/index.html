@@ -83,62 +83,77 @@ let GAMES=[];
 const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function pretty(n){return n.replace(/\.html?$/i,'').replace(/[_-]+v?\d+$/i,'').replace(/[_-]+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase())||n}
 function hue(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h}
-const enc=p=>p.split('/').map(encodeURIComponent).join('/');
+const enc=p=>{if(/^(https?:|data:|blob:)/i.test(p))return p;try{p=decodeURI(p)}catch(e){}return encodeURI(p).replace(/[?#]/g,encodeURIComponent)};
 
-/* ---------- 1) detectar los juegos ---------- */
-async function fromJson(){
-  const r=await fetch(CONFIG.folder+'/games.json',{cache:'no-cache'});if(!r.ok)throw 0;
-  const a=await r.json();
-  return a.map(x=>typeof x=='string'?{path:CONFIG.folder+'/'+x}:{...x,path:x.path||CONFIG.folder+'/'+x.file});
-}
-async function fromGithub(){
-  let {owner,repo}=CONFIG;
-  if(!owner&&location.hostname.endsWith('.github.io')){
-    owner=location.hostname.split('.')[0];repo=location.pathname.split('/')[1]||location.hostname;
-  }
-  if(!owner||!repo)throw 0;
-  const r=await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${CONFIG.root}${CONFIG.folder}`);
-  if(!r.ok)throw 0;
-  const items=await r.json(),out=[],names=new Set(items.map(i=>i.name));
-  for(const i of items){
-    if(/^[._]/.test(i.name))continue;
-    if(i.type=='file'&&/\.html?$/i.test(i.name))out.push({path:`${CONFIG.folder}/${i.name}`,base:i.name.replace(/\.html?$/i,''),covers:['png','jpg','jpeg','webp'].map(e=>`${CONFIG.folder}/${i.name.replace(/\.html?$/i,'')}.${e}`).filter(c=>names.has(c.split('/').pop()))});
-    else if(i.type=='dir')out.push({path:`${CONFIG.folder}/${i.name}/index.html`,base:i.name,covers:['png','jpg','webp'].map(e=>`${CONFIG.folder}/${i.name}/cover.${e}`)});
-  }
-  return out;
-}
-async function fromListing(){ /* servidor local: python -m http.server */
-  const r=await fetch(CONFIG.folder+'/');if(!r.ok)throw 0;
-  const d=new DOMParser().parseFromString(await r.text(),'text/html'),out=[];
-  d.querySelectorAll('a').forEach(a=>{const h=decodeURIComponent(a.getAttribute('href')||'');
-    if(/^[._?\/]/.test(h)||h.includes('://'))return;
-    if(/\.html?$/i.test(h))out.push({path:CONFIG.folder+'/'+h});
-    else if(h.endsWith('/'))out.push({path:CONFIG.folder+'/'+h+'index.html'})});
-  return out;
-}
-async function load(){
-  for(const f of [fromJson,fromGithub,fromListing]){
-    try{const a=await f();if(a.length)return a}catch(e){}
-  }
-  return [];
-}
+/* ---------- 1) detectar los juegos (varias vías; si una falla, prueba la siguiente) ---------- */
+let WARN='';
+const IMG=/\.(png|jpe?g|webp|gif|avif|svg)$/i,HTM=/\.html?$/i,nz=s=>s.toLowerCase().replace(/[^a-z0-9]/g,''),bn=p=>p.split('/').pop().replace(/\.[^.]+$/,'');
+const CVN=/^(cover|portada|capa|thumb|thumbnail|preview|banner|poster|icon|logo|screenshot|splash)/;
+async function getJSON(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 0;const t=(await r.text()).replace(/^\uFEFF/,'');if(!/^\s*[\[{]/.test(t))throw 0;
+  try{return JSON.parse(t)}catch(e){try{return JSON.parse(t.replace(/^\s*\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'').replace(/,\s*([\]}])/g,'$1'))}catch(e2){WARN='El archivo games.json tiene errores de formato (revisa comas y comillas).';throw 0}}}
+/* a) games.json (tolera comentarios y comas sobrantes; acepta carpetas y {"games":[…]}) */
+async function fromJson(){let a;for(const u of [CONFIG.folder+'/games.json','games.json'])try{a=await getJSON(u);break}catch(e){}
+  if(a&&a.games)a=a.games;if(!Array.isArray(a))throw 0;
+  const fix=f=>HTM.test(f)?f:f.replace(/\/$/,'')+'/index.html';
+  return a.map(x=>typeof x=='string'?{path:CONFIG.folder+'/'+fix(x)}:{...x,path:x.path||(x.file?CONFIG.folder+'/'+fix(x.file):'')}).filter(x=>x.path)}
+/* construye los juegos y sus portadas a partir de una lista real de archivos (sin adivinar) */
+function fromPaths(all){
+  const F=CONFIG.folder+'/',ps=all.filter(p=>p.startsWith(F)&&!/(^|\/)[._]/.test(p.slice(F.length))),imgs=ps.filter(p=>IMG.test(p)),out=[],dirs={};
+  for(const p of ps.filter(p=>HTM.test(p))){const seg=p.slice(F.length).split('/');
+    if(seg.length==1){const b=bn(p),k=nz(b);
+      out.push({path:p,base:b,exact:1,covers:imgs.filter(i=>{if(i.slice(F.length).includes('/')||!k)return false;const n=nz(bn(i));return n==k||(n.startsWith(k)&&/^(cover|portada|thumb|thumbnail|preview|icon|screenshot|banner|poster|\d*)$/.test(n.slice(k.length)))}).sort((x,y)=>x.length-y.length)})}
+    else(dirs[seg[0]]=dirs[seg[0]]||[]).push(p)}
+  for(const d in dirs){const isI=p=>/(^|\/)index\.html?$/i.test(p)?1:0,h=dirs[d].sort((x,y)=>isI(y)-isI(x)||x.split('/').length-y.split('/').length||x.localeCompare(y))[0],pre=F+d+'/',
+    pr=i=>{const n=nz(bn(i));return CVN.test(n)?0:n==nz(d)?1:2};
+    out.push({path:h,base:d,exact:1,covers:imgs.filter(i=>i.startsWith(pre)).sort((x,y)=>pr(x)-pr(y)||x.split('/').length-y.split('/').length).slice(0,6).concat(imgs.filter(i=>!i.slice(F.length).includes('/')&&nz(bn(i))==nz(d)))})}
+  return out}
+/* b) GitHub: árbol completo del repo (1 petición); si GitHub limita, usa jsDelivr */
+async function treePaths(){let{owner,repo}=CONFIG,c=[];
+  if(owner&&repo)c=[[owner,repo]];
+  else if(location.hostname.endsWith('.github.io')){const o=location.hostname.split('.')[0],s=location.pathname.split('/')[1];if(s&&!/\./.test(s))c.push([o,s]);c.push([o,location.hostname])}
+  for(const[o,r]of c){const U=[['g',`https://api.github.com/repos/${o}/${r}/git/trees/HEAD?recursive=1`],['j',`https://data.jsdelivr.com/v1/packages/gh/${o}/${r}@main?structure=flat`],['j',`https://data.jsdelivr.com/v1/packages/gh/${o}/${r}@master?structure=flat`]];
+    for(const[k,u]of U)try{const x=await(await fetch(u)).json(),ps=k=='g'?x.tree.filter(t=>t.type=='blob').map(t=>t.path):x.files.map(f=>f.name.replace(/^\//,''));if(ps.length)return ps}catch(e){}}
+  throw 0}
+function rootOf(ps){for(const r of [CONFIG.root,'docs/',''])if(ps.some(p=>p.startsWith(r+CONFIG.folder+'/')))return r;
+  const m=ps.find(p=>p.includes('/'+CONFIG.folder+'/'));return m?m.slice(0,m.indexOf('/'+CONFIG.folder+'/')+1):null}
+async function fromGithub(){const ps=await treePaths(),r=rootOf(ps);if(r==null)throw 0;return fromPaths(ps.filter(p=>p.startsWith(r)).map(p=>p.slice(r.length)))}
+/* c) servidor local con listado de carpetas (python -m http.server, nginx, Apache…) */
+async function ls(d){const u=new URL(d,location.href),r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 0;
+  const doc=new DOMParser().parseFromString(await r.text(),'text/html');if(!/index of|directory listing|listing for|files within|^\//i.test(doc.title))throw 0;
+  const o=[];doc.querySelectorAll('a[href]').forEach(a=>{let x;try{x=new URL(a.getAttribute('href'),u)}catch(e){return}
+    if(x.origin!=u.origin||!x.pathname.startsWith(u.pathname)||x.pathname==u.pathname||x.search)return;o.push(decodeURIComponent(x.pathname.slice(u.pathname.length)))});return[...new Set(o)]}
+async function fromListing(){const F=CONFIG.folder+'/',top=await ls(F),ps=[];
+  await Promise.all(top.map(async t=>{if(t.endsWith('/')){try{(await ls(F+t)).forEach(x=>ps.push(F+t+x))}catch(e){}}else ps.push(F+t)}));return fromPaths(ps)}
+async function load(){for(const f of [fromJson,fromGithub,fromListing])try{const a=await f();if(a&&a.length)return a}catch(e){}return null}
+const CK='jh-games',cacheGet=()=>{try{return JSON.parse(store.get(CK)).filter(g=>g&&g.path)}catch(e){return null}},cacheSet=a=>store.set(CK,JSON.stringify(a));
 
 /* ---------- 2) pintar la lista ---------- */
-function norm(g,i){
-  const parts=g.path.split('/'),isIdx=/index\.html?$/i.test(g.path)&&parts.length>2;
-  const base=g.base||(isIdx?parts[parts.length-2]:parts[parts.length-1].replace(/\.html?$/i,''));
-  const covers=g.cover?[g.cover]:g.covers||(isIdx?['png','jpg','webp'].map(e=>parts.slice(0,-1).join('/')+'/cover.'+e):['png','jpg','webp'].map(e=>g.path.replace(/\.html?$/i,'.'+e)));
+function norm(g){
+  const parts=g.path.split('/'),isIdx=/index\.html?$/i.test(g.path)&&parts.length>2,dir=parts.slice(0,-1).join('/'),
+    base=g.base||(isIdx?parts[parts.length-2]:parts[parts.length-1].replace(/\.html?$/i,'')),X=['png','jpg','jpeg','webp','gif','avif','PNG','JPG'];
+  let covers=(g.covers||[]).slice();
+  if(g.cover){covers=[g.cover];if(!/^(https?:|data:|\/)/i.test(g.cover)&&!g.cover.startsWith(CONFIG.folder+'/'))covers.push(CONFIG.folder+'/'+g.cover)}
+  else if(!covers.length&&!g.exact)covers=isIdx?['cover','portada','thumb','preview','index'].flatMap(n=>X.map(e=>dir+'/'+n+'.'+e)):X.map(e=>g.path.replace(/\.html?$/i,'.'+e));
   return {...g,base,id:base.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name:g.name||pretty(base),covers};
 }
+/* Último recurso para la portada: busca una imagen dentro del propio juego (og:image, icono, <img> o imagen incrustada) */
+const OK={},AC={};
+function autoCover(g){return AC[g.id]||(AC[g.id]=(async()=>{try{
+  const u=new URL(enc(g.path),location.href),t=await(await fetch(u)).text(),d=new DOMParser().parseFromString(t,'text/html'),at=(s,a)=>{const e=d.querySelector(s);return e&&e.getAttribute(a)},abs=h=>h&&!h.startsWith('data:')?new URL(h,u).href:'';
+  const h=abs(at('meta[property="og:image"]','content'))||abs(at('meta[name="twitter:image"]','content'))||abs(at('link[rel~="apple-touch-icon"]','href'))||abs(at('img[src]','src'));if(h)return h;
+  const m=t.match(/data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]{3000,}/);if(m)return URL.createObjectURL(await(await fetch(m[0])).blob());
+  return abs(at('link[rel~="icon"]','href'))}catch(e){return ''}})())}
 function cover(g){
   const h=hue(g.base),el=document.createElement('div');
   el.className='cv';el.style.background=`linear-gradient(135deg,hsl(${h},60%,42%),hsl(${(h+50)%360},65%,24%))`;
   el.textContent=g.name[0]||'?';
-  let i=0;const img=new Image();img.alt='';
-  img.onload=()=>el.appendChild(img);
-  img.onerror=()=>{if(++i<g.covers.length)img.src=enc(g.covers[i])};
-  if(g.covers.length)img.src=enc(g.covers[0]);
-  return el;
+  const list=OK[g.id]?[OK[g.id]]:(g.covers||[]).slice();let auto=false;
+  const next=()=>{
+    if(!list.length){if(!auto&&!OK[g.id]){auto=true;autoCover(g).then(u=>{if(u){list.push(u);next()}})}return}
+    const src=list.shift(),img=new Image();img.alt='';
+    img.onload=()=>{if(img.naturalWidth<24&&list.length)return next();OK[g.id]=src;el.appendChild(img)};
+    img.onerror=next;img.src=enc(src)};
+  next();return el;
 }
 function render(){
   const q=$('q').value.trim().toLowerCase(),list=GAMES.filter(g=>g.name.toLowerCase().includes(q)),grid=$('grid');
@@ -151,7 +166,7 @@ function render(){
     b.appendChild(t);w.appendChild(b);w.appendChild(timeBox(g));grid.appendChild(w);
   }
   const st=$('st');
-  if(!GAMES.length){st.hidden=false;st.innerHTML=`No encuentro juegos todavía.<br>Sube tus archivos <code>.html</code> a la carpeta <code>${esc(CONFIG.folder)}/</code> de tu repositorio y aparecerán aquí solos.`}
+  if(!GAMES.length){st.hidden=false;st.innerHTML=`${WARN?'<b>'+esc(WARN)+'</b><br>':''}No encuentro juegos todavía.<br>Sube tus archivos <code>.html</code> a la carpeta <code>${esc(CONFIG.folder)}/</code> de tu repositorio y aparecerán aquí solos.`}
   else if(!list.length){st.hidden=false;st.textContent='Ningún juego coincide con la búsqueda.'}
   else st.hidden=true;
   $('cnt').textContent=GAMES.length?`${GAMES.length} ${GAMES.length==1?'juego':'juegos'}`:'Sin juegos';
@@ -212,10 +227,15 @@ $('q').oninput=render;
 
 /* ---------- inicio ---------- */
 document.title=CONFIG.title;$('ttl').firstChild.textContent=CONFIG.title;
-load().then(a=>{
-  GAMES=a.map(norm).sort((x,y)=>x.name.localeCompare(y.name,'es',{numeric:true}));
-  render();
-  const h=location.hash.slice(1),g=GAMES.find(x=>x.id==h);if(g)open_(g);
+let first=true;
+function apply(a){
+  GAMES=a.map(norm).sort((x,y)=>x.name.localeCompare(y.name,'es',{numeric:true}));render();
+  if(first){first=false;const g=GAMES.find(x=>x.id==location.hash.slice(1));if(g)open_(g)}
+}
+const c0=cacheGet();if(c0&&c0.length)apply(c0); /* muestra al instante lo último que funcionó… */
+load().then(a=>{ /* …y lo actualiza en cuanto responde la detección */
+  if(a){if(JSON.stringify(a)!=JSON.stringify(c0)){cacheSet(a);apply(a)}}
+  else if(!c0||!c0.length)apply([]);
 });
 </script>
 </body>
