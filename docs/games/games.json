@@ -1,0 +1,28 @@
+[
+  "Jose_Dash.html",
+  {
+    "name": "Roba la placa de Jose",
+    "file": "Roba_la_placa_de_Jose.html"
+    "cover": "Roba_la_placa_de_Jose.png"
+  },
+  {
+    "name": "Cuida a Jose",
+    "file": "Cuida_a_Jose.html",
+    "cover": "games/Cuida_a_Jose.png"
+  },
+  {
+    "name": "FIVE NIGHTS AT JOSES NIGHTCLUB",
+    "file": "FIVE_NIGHTS_AT_JOSES_NIGHTCLUB.html",
+    "cover": "games/FIVE_NIGHTS_AT_JOSES_NIGHTCLUB.png"
+  },
+  {
+    "name": "Escapa de Jose",
+    "file": "Escapa_de_Jose.html",
+    "cover": "games/Escapa_de_Jose.png"
+  },
+  {
+    "name": "Jose Dash",
+    "file": "Jose_Dash.html",
+    "cover": "games/Jose_Dash.png"
+  }
+]
