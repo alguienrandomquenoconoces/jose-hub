@@ -25,10 +25,10 @@ body{background:var(--bg);display:flex;align-items:center;justify-content:center
 #nm #df button b{display:block;font-size:18px;color:#ff7a00}
 #nm #df button span{display:block;font:500 13px/1.3 Oswald,sans-serif;color:#cfd8dd;margin-top:2px}
 #nm small{display:block;margin-top:10px;color:#8fa0ab;font:500 12px Oswald,sans-serif}
-</style></head><body>
+</style><script src="../lb-shared.js"></script></head><body>
 <canvas id="c" aria-label="Juego de parkour"></canvas>
 <div id="nm" role="dialog" aria-modal="true" aria-label="Nombre de usuario"><form id="nmf" autocomplete="off"><h2>¡Prepárate!</h2><p>Tu nombre, dispositivo y dificultad aparecerán en la clasificación</p><input id="nmi" maxlength="14" placeholder="Nombre de usuario" aria-label="Nombre de usuario" required>
-<div class="lb2">¿En qué vas a jugar?</div><div class="opts" id="dv"><button type="button" data-v="Teclado">⌨ Teclado</button><button type="button" data-v="Mando">🎮 Mando</button><button type="button" data-v="Táctil">📱 Táctil</button></div>
+<div class="lb2">¿En qué vas a jugar?</div><div class="opts" id="dv"><button type="button" data-v="Teclado">⌨ Teclado</button><button type="button" data-v="Mando">🎮 Mando</button></div>
 <div class="lb2">Dificultad</div><div class="opts" id="df">
 <button type="button" data-d="facil"><b>Fácil</b><span>Arranca despacio y acelera poco. Edificios largos, más power-ups, tiempo lento de 7 s y Jose dispara menos y te alcanza más despacio.</span></button>
 <button type="button" data-d="normal"><b>Normal</b><span>La experiencia original: velocidad creciente, power-ups habituales y tiempo lento de 5 s.</span></button>
@@ -45,8 +45,8 @@ const DIFFS={facil:{name:'Fácil',v0:500,acc:10,vmax:950,pu:.55,slow:7,plat:1.2,
  normal:{name:'Normal',v0:560,acc:14,vmax:1150,pu:.4,slow:5,plat:1,shot:1,drain:1,xjT:0,fireT:3},
  dificil:{name:'Difícil',v0:880,acc:16,vmax:1300,pu:.15,slow:2,plat:.65,shot:.85,drain:1.15,xjT:3,fireT:2},
  extremo:{name:'Extremo',v0:1000,acc:18,vmax:1400,pu:.07,slow:1.5,plat:.5,shot:.7,drain:1.3,xjT:2,fireT:2}};
-const DK=Object.keys(DIFFS),DV=['Teclado','Mando','Táctil'];
-let diff='normal',dev=('ontouchstart' in window)?'Táctil':'Teclado',maxC=0,xjT=0;
+const DK=Object.keys(DIFFS),DV=['Teclado','Mando'];
+let diff='normal',dev='Teclado',maxC=0,xjT=0;
 try{const a=localStorage.getItem('jh-diff'),b=localStorage.getItem('jh-dev');if(DIFFS[a])diff=a;if(DV.includes(b))dev=b}catch(e){}
 let D=DIFFS[diff];
 try{best=+localStorage.getItem('pk-best-'+diff)||0}catch(e){}
@@ -83,7 +83,8 @@ let player='',naming=false;
 try{player=localStorage.getItem(NAME_KEY)||''}catch(e){}
 function saveScore(n,p){if(!n||p<=0)return;try{let a=JSON.parse(localStorage.getItem(LB_KEY)||'[]');if(!Array.isArray(a))a=[];const k=(n+'|'+diff+'|'+dev).toLowerCase();let e=a.find(x=>x.k==k);
  if(!e){e={k,name:n,diff,dev,score:0,combo:0,coins:0};a.push(e)}e.score=Math.max(e.score,p);e.combo=Math.max(e.combo,maxC);e.coins=Math.max(e.coins,coins);e.date=Date.now();
- localStorage.setItem(LB_KEY,JSON.stringify(a.slice(-400)))}catch(e){}}
+ localStorage.setItem(LB_KEY,JSON.stringify(a.slice(-400)));
+ if(window.JHLB)JHLB.submit({name:e.name,diff:e.diff,dev:e.dev,score:e.score,combo:e.combo,coins:e.coins})}catch(e){}}
 function sel(g,a,v){document.querySelectorAll('#'+g+' button').forEach(b=>b.classList.toggle('on',b.dataset[a]==v))}
 function askName(cb){const o=document.getElementById('nm'),i=document.getElementById('nmi'),f=document.getElementById('nmf');
  naming=true;o.classList.add('on');i.value=player;sel('dv','v',dev);sel('df','d',diff);setTimeout(()=>{i.focus();i.select()},30);
