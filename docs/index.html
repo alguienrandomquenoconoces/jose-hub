@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jose Hub</title>
+<style>
+:root{--bg:#17142b;--card:#231f3d;--line:#3a3466;--fg:#f4f1ff;--mut:#a9a3cf;--a:#ffb703;--b:#4cc9f0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Avenir Next","Segoe UI",system-ui,sans-serif;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+header{max-width:1100px;margin:0 auto;padding:40px 20px 18px;display:flex;flex-wrap:wrap;gap:16px 24px;align-items:end;justify-content:space-between}
+h1{margin:0;font-size:clamp(34px,7vw,60px);line-height:1;font-weight:900;letter-spacing:-1px}
+h1 span{display:block;font-size:16px;font-weight:600;letter-spacing:0;color:var(--mut);margin-top:10px}
+#q{width:min(100%,280px);padding:12px 16px;border-radius:999px;border:2px solid var(--line);background:var(--card);color:var(--fg);font:inherit;outline:0}
+#q:focus-visible{border-color:var(--b)}
+main{max-width:1100px;margin:0 auto;padding:10px 20px 60px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:22px}
+.g{display:block;text-align:left;padding:0;background:var(--card);border:2px solid var(--line);border-radius:6px 6px 14px 14px;color:inherit;font:inherit;cursor:pointer;overflow:hidden;transition:transform .15s,border-color .15s}
+.g:hover,.g:focus-visible{transform:translateY(-4px);border-color:var(--a);outline:0}
+.cv{position:relative;aspect-ratio:16/10;display:grid;place-items:center;font-size:64px;font-weight:900;color:#fff8;overflow:hidden}
+.cv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.t{padding:12px 14px 14px;border-top:4px solid var(--a)}
+.t b{display:block;font-size:17px;line-height:1.2}
+.t small{color:var(--mut)}
+#st{text-align:center;color:var(--mut);padding:60px 10px;line-height:1.6}
+#st code{background:var(--card);padding:2px 8px;border-radius:6px;color:var(--a)}
+#pl{position:fixed;inset:0;z-index:9;background:#000;display:none;flex-direction:column}
+#pl.on{display:flex}
+#bar{display:flex;gap:8px;align-items:center;padding:8px 10px;padding-top:calc(env(safe-area-inset-top,0px) + 8px);background:#0c0a1c}
+#bar b{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#bar button,#bar a{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:7px 12px;font:inherit;font-size:14px;text-decoration:none;cursor:pointer}
+#bar button:hover,#bar a:hover{border-color:var(--a)}
+#fr{flex:1;width:100%;border:0;background:#000}
+#lb{margin:0 0 28px;background:var(--card);border:2px solid var(--line);border-radius:6px 6px 14px 14px;border-top:4px solid var(--a);padding:16px 18px 14px}
+#lb h2{margin:0 0 2px;font-size:22px;font-weight:900}
+#lb .sub{color:var(--mut);font-size:14px;margin:0 0 12px}
+#lb ol{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+#lb li{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:8px 12px;border-radius:8px;background:#ffffff0a}
+#lb li:nth-child(-n+3){background:#ffb7031a}
+#lb .rk{font-weight:900;color:var(--a);text-align:center}
+#lb .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+#lb .sc{font-variant-numeric:tabular-nums;font-weight:900;color:var(--b)}
+#lb .em{color:var(--mut);padding:10px 2px}
+#lbk{display:block;margin:0 0 28px;background:var(--card);border:2px solid var(--line);border-top:4px solid var(--a);border-radius:6px 6px 14px 14px;padding:16px 18px;color:var(--fg);text-decoration:none;font-size:20px;font-weight:900}
+#lbk small{display:block;color:var(--mut);font-size:14px;font-weight:400;margin-top:2px}
+#lbk:hover,#lbk:focus-visible{border-color:var(--a);outline:0}
+.w{display:flex;flex-direction:column}
+.w .g{flex:1}
+.tm{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 2px 0;font-size:13px;color:var(--mut)}
+.tm output{white-space:nowrap;color:var(--fg);font-weight:700;font-variant-numeric:tabular-nums}
+.tm select{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:3px 6px;font:inherit;font-size:13px}
+.tm select:focus-visible{border-color:var(--b);outline:0}
+.hr{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#sv{background:var(--card);color:var(--fg);border:2px solid var(--line);border-radius:999px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer}
+#sv:hover,#sv:focus-visible{border-color:var(--a);outline:0}
+#sm{position:fixed;inset:0;z-index:12;background:#000b;display:none;align-items:center;justify-content:center;padding:18px}
+#sm.on{display:flex}
+#sm .bx{width:min(100%,460px);max-height:100%;overflow:auto;background:var(--card);border:2px solid var(--line);border-top:4px solid var(--a);border-radius:6px 6px 14px 14px;padding:20px}
+#sm h2{margin:0 0 4px;font-size:22px;font-weight:900}
+#sm p{color:var(--mut);font-size:14px;line-height:1.5;margin:0 0 14px}
+#sm dl{margin:0 0 16px;display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:14px}
+#sm dt{color:var(--mut)}#sm dd{margin:0;font-weight:700;overflow-wrap:anywhere}
+#sm .ac{display:flex;gap:8px;flex-wrap:wrap}
+#sm .ac button,#sm .ac label{background:#ffffff0d;color:var(--fg);border:2px solid var(--line);border-radius:8px;padding:9px 14px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+#sm .ac button:hover,#sm .ac label:hover,#sm .ac button:focus-visible,#sm .ac label:focus-within{border-color:var(--a);outline:0}
+#sm .ac .pri{background:#ffb7031f;border-color:var(--a);color:var(--a)}
+#sm input[type=file]{position:absolute;opacity:0;width:1px;height:1px}
+#sm .ms{margin-top:14px;font-size:14px;min-height:20px;line-height:1.45}
+#sm .ms.ok{color:#7dff8a}#sm .ms.er{color:#ff8a8a}
+@media (prefers-reduced-motion:reduce){.g{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="ttl">Jose Hub<span id="cnt">Cargando…</span></h1>
+  <div class="hr"><button id="sv" type="button">💾 Guardado</button><input id="q" type="search" placeholder="Buscar juego" aria-label="Buscar juego"></div>
+</header>
+<main>
+  <a id="lbk" href="clasificacion.html">🏆 Ver clasificación <small>Puntos, combos y monedas por dificultad y dispositivo</small></a>
+  <div id="grid"></div>
+  <div id="st" hidden></div>
+</main>
+<div id="sm" role="dialog" aria-modal="true" aria-labelledby="smt" hidden>
+  <div class="bx">
+    <h2 id="smt">💾 Guardado de Escapa de JOSE</h2>
+    <p>Guarda tu nombre y tus récords en un archivo cifrado para llevarlos a otro navegador o dispositivo. Si alguien modifica el archivo, no se podrá importar.</p>
+    <dl>
+      <dt>Nombre</dt><dd id="s-n">—</dd>
+      <dt>Récords</dt><dd id="s-r">—</dd>
+      <dt>Mejor puntuación</dt><dd id="s-b">—</dd>
+    </dl>
+    <div class="ac">
+      <button id="s-e" class="pri" type="button">⬇ Exportar guardado</button>
+      <label>⬆ Importar guardado<input id="s-i" type="file" accept=".sav,.txt"></label>
+      <button id="s-c" type="button">Cerrar</button>
+    </div>
+    <div id="s-m" class="ms" role="status" aria-live="polite"></div>
+  </div>
+</div>
+<div id="pl" role="dialog" aria-modal="true">
+  <div id="bar"><button id="x">Cerrar</button><b id="pt"></b><button id="fs">Pantalla completa</button><a id="nw" target="_blank" rel="noopener">Abrir aparte</a></div>
+  <iframe id="fr" allow="fullscreen; gamepad; autoplay; clipboard-write" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups allow-modals"></iframe>
+</div>
+<script>
+/* ===== Configuración (todo es opcional; se detecta solo en GitHub Pages) ===== */
+const CONFIG={
+  title:'Jose Hub',   // título de la web
+  folder:'games',       // carpeta donde pones los juegos
+  root:'docs/',         // carpeta del repo desde la que publicas GitHub Pages ('' si usas la raíz)
+  owner:'', repo:''     // solo si lo abres desde otro sitio; en usuario.github.io/repo se detecta solo
+};
+
+const $=id=>document.getElementById(id);
+let GAMES=[];
+
+/* ---------- utilidades ---------- */
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function pretty(n){return n.replace(/\.html?$/i,'').replace(/[_-]+v?\d+$/i,'').replace(/[_-]+/g,' ').trim().replace(/\b\w/g,c=>c.toUpperCase())||n}
+function hue(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h}
+const enc=p=>{if(/^(https?:|data:|blob:)/i.test(p))return p;try{p=decodeURI(p)}catch(e){}return encodeURI(p).replace(/[?#]/g,encodeURIComponent)};
+
+/* ---------- 1) detectar los juegos (varias vías; si una falla, prueba la siguiente) ---------- */
+let WARN='';
+const IMG=/\.(png|jpe?g|webp|gif|avif|svg)$/i,HTM=/\.html?$/i,nz=s=>s.toLowerCase().replace(/[^a-z0-9]/g,''),bn=p=>p.split('/').pop().replace(/\.[^.]+$/,'');
+const CVN=/^(cover|portada|capa|thumb|thumbnail|preview|banner|poster|icon|logo|screenshot|splash)/;
+async function getJSON(u){const r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 0;const t=(await r.text()).replace(/^\uFEFF/,'');if(!/^\s*[\[{]/.test(t))throw 0;
+  try{return JSON.parse(t)}catch(e){try{return JSON.parse(t.replace(/^\s*\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'').replace(/,\s*([\]}])/g,'$1'))}catch(e2){WARN='El archivo games.json tiene errores de formato (revisa comas y comillas).';throw 0}}}
+/* a) games.json (tolera comentarios y comas sobrantes; acepta carpetas y {"games":[…]}) */
+async function fromJson(){let a;for(const u of [CONFIG.folder+'/games.json','games.json'])try{a=await getJSON(u);break}catch(e){}
+  if(a&&a.games)a=a.games;if(!Array.isArray(a))throw 0;
+  const fix=f=>HTM.test(f)?f:f.replace(/\/$/,'')+'/index.html';
+  return a.map(x=>typeof x=='string'?{path:CONFIG.folder+'/'+fix(x)}:{...x,path:x.path||(x.file?CONFIG.folder+'/'+fix(x.file):'')}).filter(x=>x.path)}
+/* construye los juegos y sus portadas a partir de una lista real de archivos (sin adivinar) */
+function fromPaths(all){
+  const F=CONFIG.folder+'/',ps=all.filter(p=>p.startsWith(F)&&!/(^|\/)[._]/.test(p.slice(F.length))),imgs=ps.filter(p=>IMG.test(p)),out=[],dirs={};
+  for(const p of ps.filter(p=>HTM.test(p))){const seg=p.slice(F.length).split('/');
+    if(seg.length==1){const b=bn(p),k=nz(b);
+      out.push({path:p,base:b,exact:1,covers:imgs.filter(i=>{if(i.slice(F.length).includes('/')||!k)return false;const n=nz(bn(i));return n==k||(n.startsWith(k)&&/^(cover|portada|thumb|thumbnail|preview|icon|screenshot|banner|poster|\d*)$/.test(n.slice(k.length)))}).sort((x,y)=>x.length-y.length)})}
+    else(dirs[seg[0]]=dirs[seg[0]]||[]).push(p)}
+  for(const d in dirs){const isI=p=>/(^|\/)index\.html?$/i.test(p)?1:0,h=dirs[d].sort((x,y)=>isI(y)-isI(x)||x.split('/').length-y.split('/').length||x.localeCompare(y))[0],pre=F+d+'/',
+    pr=i=>{const n=nz(bn(i));return CVN.test(n)?0:n==nz(d)?1:2};
+    out.push({path:h,base:d,exact:1,covers:imgs.filter(i=>i.startsWith(pre)).sort((x,y)=>pr(x)-pr(y)||x.split('/').length-y.split('/').length).slice(0,6).concat(imgs.filter(i=>!i.slice(F.length).includes('/')&&nz(bn(i))==nz(d)))})}
+  return out}
+/* b) GitHub: árbol completo del repo (1 petición); si GitHub limita, usa jsDelivr */
+async function treePaths(){let{owner,repo}=CONFIG,c=[];
+  if(owner&&repo)c=[[owner,repo]];
+  else if(location.hostname.endsWith('.github.io')){const o=location.hostname.split('.')[0],s=location.pathname.split('/')[1];if(s&&!/\./.test(s))c.push([o,s]);c.push([o,location.hostname])}
+  for(const[o,r]of c){const U=[['g',`https://api.github.com/repos/${o}/${r}/git/trees/HEAD?recursive=1`],['j',`https://data.jsdelivr.com/v1/packages/gh/${o}/${r}@main?structure=flat`],['j',`https://data.jsdelivr.com/v1/packages/gh/${o}/${r}@master?structure=flat`]];
+    for(const[k,u]of U)try{const x=await(await fetch(u)).json(),ps=k=='g'?x.tree.filter(t=>t.type=='blob').map(t=>t.path):x.files.map(f=>f.name.replace(/^\//,''));if(ps.length)return ps}catch(e){}}
+  throw 0}
+function rootOf(ps){for(const r of [CONFIG.root,'docs/',''])if(ps.some(p=>p.startsWith(r+CONFIG.folder+'/')))return r;
+  const m=ps.find(p=>p.includes('/'+CONFIG.folder+'/'));return m?m.slice(0,m.indexOf('/'+CONFIG.folder+'/')+1):null}
+async function fromGithub(){const ps=await treePaths(),r=rootOf(ps);if(r==null)throw 0;return fromPaths(ps.filter(p=>p.startsWith(r)).map(p=>p.slice(r.length)))}
+/* c) servidor local con listado de carpetas (python -m http.server, nginx, Apache…) */
+async function ls(d){const u=new URL(d,location.href),r=await fetch(u,{cache:'no-cache'});if(!r.ok)throw 0;
+  const doc=new DOMParser().parseFromString(await r.text(),'text/html');if(!/index of|directory listing|listing for|files within|^\//i.test(doc.title))throw 0;
+  const o=[];doc.querySelectorAll('a[href]').forEach(a=>{let x;try{x=new URL(a.getAttribute('href'),u)}catch(e){return}
+    if(x.origin!=u.origin||!x.pathname.startsWith(u.pathname)||x.pathname==u.pathname||x.search)return;o.push(decodeURIComponent(x.pathname.slice(u.pathname.length)))});return[...new Set(o)]}
+async function fromListing(){const F=CONFIG.folder+'/',top=await ls(F),ps=[];
+  await Promise.all(top.map(async t=>{if(t.endsWith('/')){try{(await ls(F+t)).forEach(x=>ps.push(F+t+x))}catch(e){}}else ps.push(F+t)}));return fromPaths(ps)}
+async function load(){for(const f of [fromJson,fromGithub,fromListing])try{const a=await f();if(a&&a.length)return a}catch(e){}return null}
+const CK='jh-games',cacheGet=()=>{try{return JSON.parse(store.get(CK)).filter(g=>g&&g.path)}catch(e){return null}},cacheSet=a=>store.set(CK,JSON.stringify(a));
+
+/* ---------- 2) pintar la lista ---------- */
+function norm(g){
+  const parts=g.path.split('/'),isIdx=/index\.html?$/i.test(g.path)&&parts.length>2,dir=parts.slice(0,-1).join('/'),
+    base=g.base||(isIdx?parts[parts.length-2]:parts[parts.length-1].replace(/\.html?$/i,'')),X=['png','jpg','jpeg','webp','gif','avif','PNG','JPG'];
+  let covers=(g.covers||[]).slice();
+  if(g.cover){covers=[g.cover];if(!/^(https?:|data:|\/)/i.test(g.cover)&&!g.cover.startsWith(CONFIG.folder+'/'))covers.push(CONFIG.folder+'/'+g.cover)}
+  else if(!covers.length&&!g.exact)covers=isIdx?['cover','portada','thumb','preview','index'].flatMap(n=>X.map(e=>dir+'/'+n+'.'+e)):X.map(e=>g.path.replace(/\.html?$/i,'.'+e));
+  return {...g,base,id:base.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name:g.name||pretty(base),covers};
+}
+/* Último recurso para la portada: busca una imagen dentro del propio juego (og:image, icono, <img> o imagen incrustada) */
+const OK={},AC={};
+function autoCover(g){return AC[g.id]||(AC[g.id]=(async()=>{try{
+  const u=new URL(enc(g.path),location.href),t=await(await fetch(u)).text(),d=new DOMParser().parseFromString(t,'text/html'),at=(s,a)=>{const e=d.querySelector(s);return e&&e.getAttribute(a)},abs=h=>h&&!h.startsWith('data:')?new URL(h,u).href:'';
+  const h=abs(at('meta[property="og:image"]','content'))||abs(at('meta[name="twitter:image"]','content'))||abs(at('link[rel~="apple-touch-icon"]','href'))||abs(at('img[src]','src'));if(h)return h;
+  const m=t.match(/data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+\/=]{3000,}/);if(m)return URL.createObjectURL(await(await fetch(m[0])).blob());
+  return abs(at('link[rel~="icon"]','href'))}catch(e){return ''}})())}
+function cover(g){
+  const h=hue(g.base),el=document.createElement('div');
+  el.className='cv';el.style.background=`linear-gradient(135deg,hsl(${h},60%,42%),hsl(${(h+50)%360},65%,24%))`;
+  el.textContent=g.name[0]||'?';
+  const list=OK[g.id]?[OK[g.id]]:(g.covers||[]).slice();let auto=false;
+  const next=()=>{
+    if(!list.length){if(!auto&&!OK[g.id]){auto=true;autoCover(g).then(u=>{if(u){list.push(u);next()}})}return}
+    const src=list.shift(),img=new Image();img.alt='';
+    img.onload=()=>{if(img.naturalWidth<24&&list.length)return next();OK[g.id]=src;el.appendChild(img)};
+    img.onerror=next;img.src=enc(src)};
+  next();return el;
+}
+function render(){
+  const q=$('q').value.trim().toLowerCase(),list=GAMES.filter(g=>g.name.toLowerCase().includes(q)),grid=$('grid');
+  grid.innerHTML='';
+  for(const g of list){
+    const w=document.createElement('div');w.className='w';
+    const b=document.createElement('button');b.className='g';b.onclick=()=>open_(g);
+    b.appendChild(cover(g));
+    const t=document.createElement('div');t.className='t';t.innerHTML=`<b>${esc(g.name)}</b><small>Jugar</small>`;
+    b.appendChild(t);w.appendChild(b);w.appendChild(timeBox(g));grid.appendChild(w);
+  }
+  const st=$('st');
+  if(!GAMES.length){st.hidden=false;st.innerHTML=`${WARN?'<b>'+esc(WARN)+'</b><br>':''}No encuentro juegos todavía.<br>Sube tus archivos <code>.html</code> a la carpeta <code>${esc(CONFIG.folder)}/</code> de tu repositorio y aparecerán aquí solos.`}
+  else if(!list.length){st.hidden=false;st.textContent='Ningún juego coincide con la búsqueda.'}
+  else st.hidden=true;
+  $('cnt').textContent=GAMES.length?`${GAMES.length} ${GAMES.length==1?'juego':'juegos'}`:'Sin juegos';
+}
+
+/* ---------- tiempo jugado (por juego, se guarda en este navegador) ---------- */
+const TK=id=>'jh-time-'+id,UK='jh-unit';
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const getSecs=id=>+store.get(TK(id))||0;
+function fmtTime(sec,u){
+  sec=Math.floor(sec);
+  if(u=='h')return (sec/3600).toLocaleString('es',{maximumFractionDigits:2})+' h';
+  if(u=='m')return (sec/60).toLocaleString('es',{maximumFractionDigits:1})+' min';
+  if(u=='s')return sec.toLocaleString('es')+' s';
+  return `${Math.floor(sec/3600)} h ${Math.floor(sec%3600/60)} min ${sec%60} s`;
+}
+function timeBox(g){
+  const d=document.createElement('div');d.className='tm';
+  const out=document.createElement('output');out.dataset.id=g.id;
+  const sel=document.createElement('select');sel.setAttribute('aria-label','Unidad de tiempo de '+g.name);
+  [['t','Total'],['h','Horas'],['m','Minutos'],['s','Segundos']].forEach(([v,l])=>sel.add(new Option(l,v)));
+  sel.value=store.get(UK+'-'+g.id)||store.get(UK)||'t';
+  const upd=()=>{out.textContent='⏱ '+fmtTime(getSecs(g.id),sel.value)};
+  sel.onchange=()=>{store.set(UK+'-'+g.id,sel.value);upd()};
+  out.upd=upd;upd();
+  d.append(out,sel);
+  return d;
+}
+function refreshTimes(){document.querySelectorAll('.tm output').forEach(o=>o.upd&&o.upd())}
+let cur=null,lastTick=0;
+function tick(){
+  if(!cur)return;
+  const n=Date.now(),dt=(n-lastTick)/1000;lastTick=n;
+  if(!document.hidden&&dt>0&&dt<5){store.set(TK(cur.id),getSecs(cur.id)+dt);}
+  refreshTimes();
+}
+setInterval(tick,1000);
+document.addEventListener('visibilitychange',()=>{lastTick=Date.now()});
+
+function renderLB(){}
+addEventListener('storage',e=>{if(e.key&&e.key.startsWith('jh-time-'))refreshTimes()});
+
+/* ---------- 3) reproductor ---------- */
+function open_(g){
+  cur=g;lastTick=Date.now();$('pt').textContent=g.name;$('nw').href=enc(g.path);$('fr').src=enc(g.path);
+  $('pl').classList.add('on');document.body.style.overflow='hidden';
+  history.replaceState(null,'','#'+g.id);$('fr').onload=()=>$('fr').focus();
+}
+function close_(){
+  tick();cur=null;renderLB();refreshTimes();
+  $('pl').classList.remove('on');$('fr').src='about:blank';document.body.style.overflow='';
+  history.replaceState(null,'',location.pathname+location.search);
+}
+$('x').onclick=close_;
+$('fs').onclick=()=>{const f=$('fr');(f.requestFullscreen||f.webkitRequestFullscreen||(()=>{})).call(f)};
+addEventListener('keydown',e=>{if(e.key=='Escape'&&$('pl').classList.contains('on'))close_()});
+$('q').oninput=render;
+
+/* ---------- guardado cifrado (nombre + récords de Escapa de JOSE) ---------- */
+const SV=(()=>{
+  const MAGIC='HUBSAVE1',SECRET='jose-hub·escapa·guardado·7f3c9a1e-52d8-4b0e-a6c4-9e1d83b7f240',
+    KN={lb2:'jh-lb2-escapa-de-jose',lbo:'jh-lb-escapa-de-jose',name:'jh-name',diff:'jh-diff',dev:'jh-dev'},
+    DIFF=['facil','normal','dificil','extremo'],DEV=['Teclado','Mando'],
+    BESTS=['pk-best'].concat(DIFF.map(d=>'pk-best-'+d)),
+    te=new TextEncoder(),td=new TextDecoder();
+  let K;
+  const key=()=>K||(K=crypto.subtle.digest('SHA-256',te.encode(SECRET)).then(h=>crypto.subtle.importKey('raw',h,'AES-GCM',false,['encrypt','decrypt'])));
+  const b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+  const unb64=t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0));
+  const num=x=>{x=+x;return isFinite(x)&&x>0?Math.min(Math.floor(x),1e12):0};
+  const nm=t=>String(t==null?'':t).replace(/\s+/g,' ').trim().slice(0,14);
+  const jget=k=>{try{const a=JSON.parse(store.get(k)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}};
+  const mx=(c,r)=>{c.score=Math.max(c.score,r.score);c.combo=Math.max(c.combo,r.combo);c.coins=Math.max(c.coins,r.coins);c.date=Math.max(c.date,r.date)};
+
+  /* Normaliza y valida: solo pasan datos con la forma exacta que usa el juego */
+  function clean(d){
+    if(!d||typeof d!='object'||d.v!==1)throw new Error('fmt');
+    const o={name:nm(d.name),diff:DIFF.includes(d.diff)?d.diff:'',dev:DEV.includes(d.dev)?d.dev:'',lb2:[],lbo:[],best:{}},m2=new Map(),m1=new Map();
+    for(const e of (Array.isArray(d.lb2)?d.lb2:[]).slice(0,5000)){
+      if(!e)continue;const n=nm(e.name);if(!n||!DIFF.includes(e.diff)||!DEV.includes(e.dev))continue;
+      const k=(n+'|'+e.diff+'|'+e.dev).toLowerCase(),r={k,name:n,diff:e.diff,dev:e.dev,score:num(e.score),combo:num(e.combo),coins:num(e.coins),date:num(e.date)},c=m2.get(k);
+      c?mx(c,r):m2.set(k,r)}
+    for(const e of (Array.isArray(d.lbo)?d.lbo:[]).slice(0,5000)){
+      if(!e)continue;const n=nm(e.name);if(!n)continue;
+      const k=n.toLowerCase(),r={name:n,score:num(e.score),combo:num(e.combo),coins:num(e.coins),date:num(e.date)},c=m1.get(k);
+      c?mx(c,r):m1.set(k,r)}
+    o.lb2=[...m2.values()];o.lbo=[...m1.values()];
+    for(const k of BESTS){const v=num(d.best&&d.best[k]);if(v)o.best[k]=v}
+    return o}
+
+  const snapshot=()=>{const best={};BESTS.forEach(k=>{best[k]=store.get(k)});
+    return clean({v:1,name:store.get(KN.name),diff:store.get(KN.diff),dev:store.get(KN.dev),lb2:jget(KN.lb2),lbo:jget(KN.lbo),best})};
+
+  async function pack(){
+    const iv=crypto.getRandomValues(new Uint8Array(12)),data=te.encode(JSON.stringify({...snapshot(),v:1,t:Date.now()}));
+    const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:te.encode(MAGIC)},await key(),data)),all=new Uint8Array(12+ct.length);
+    all.set(iv);all.set(ct,12);return MAGIC+'.'+b64(all)}
+
+  async function unpack(txt){
+    txt=String(txt).trim();if(!txt.startsWith(MAGIC+'.'))throw new Error('fmt');
+    let raw;try{raw=unb64(txt.slice(MAGIC.length+1))}catch(e){throw new Error('fmt')}
+    if(raw.length<29)throw new Error('fmt');
+    let pt;try{pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:raw.slice(0,12),additionalData:te.encode(MAGIC)},await key(),raw.slice(12))}catch(e){throw new Error('tamper')}
+    let d;try{d=JSON.parse(td.decode(pt))}catch(e){throw new Error('fmt')}
+    return clean(d)}
+
+  /* Fusiona con lo que ya hay en este navegador: nunca baja un récord */
+  function apply(o){
+    const cur=clean({v:1,lb2:jget(KN.lb2),lbo:jget(KN.lbo),best:Object.fromEntries(BESTS.map(k=>[k,store.get(k)]))}),m2=new Map(cur.lb2.map(e=>[e.k,e])),m1=new Map(cur.lbo.map(e=>[e.name.toLowerCase(),e]));
+    o.lb2.forEach(e=>{const c=m2.get(e.k);c?mx(c,e):m2.set(e.k,{...e})});
+    o.lbo.forEach(e=>{const k=e.name.toLowerCase(),c=m1.get(k);c?mx(c,e):m1.set(k,{...e})});
+    store.set(KN.lb2,JSON.stringify([...m2.values()].sort((a,b)=>a.date-b.date).slice(-400)));
+    store.set(KN.lbo,JSON.stringify([...m1.values()].sort((a,b)=>b.score-a.score).slice(0,200)));
+    for(const k of BESTS){const v=Math.max(num(store.get(k)),o.best[k]||0);if(v)store.set(k,String(v))}
+    if(o.name)store.set(KN.name,o.name);if(o.diff)store.set(KN.diff,o.diff);if(o.dev)store.set(KN.dev,o.dev);
+    return{n2:m2.size,n1:m1.size}}
+
+  const stat=()=>{const o=snapshot(),b=Math.max(0,...o.lb2.map(e=>e.score),...o.lbo.map(e=>e.score));
+    return{name:o.name,rec:o.lb2.length+o.lbo.length,best:b}};
+  return{pack,unpack,apply,stat,ok:()=>!!(window.crypto&&crypto.subtle)}
+})();
+
+(()=>{
+  const m=$('sm'),msg=$('s-m'),say=(t,c)=>{msg.textContent=t;msg.className='ms'+(c?' '+c:'')};
+  function fill(){const s=SV.stat();$('s-n').textContent=s.name||'Sin nombre todavía';
+    $('s-r').textContent=s.rec?s.rec+(s.rec==1?' marca guardada':' marcas guardadas'):'Aún no hay récords';
+    $('s-b').textContent=s.best?s.best.toLocaleString('es'):'—'}
+  function show(){fill();say('');m.hidden=false;m.classList.add('on');$('s-e').focus();
+    if(!SV.ok())say('Este navegador no permite cifrar aquí. Abre la web desde https:// (GitHub Pages) o localhost.','er')}
+  function hide(){m.classList.remove('on');m.hidden=true;$('sv').focus()}
+  $('sv').onclick=show;$('s-c').onclick=hide;
+  m.addEventListener('click',e=>{if(e.target===m)hide()});
+  addEventListener('keydown',e=>{if(e.key=='Escape'&&m.classList.contains('on'))hide()});
+  $('s-e').onclick=async()=>{
+    if(!SV.ok())return say('Este navegador no permite cifrar aquí.','er');
+    try{const t=await SV.pack(),a=document.createElement('a'),d=new Date(),p=n=>String(n).padStart(2,'0');
+      a.href=URL.createObjectURL(new Blob([t],{type:'text/plain'}));
+      a.download=`guardado-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.sav`;
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+      say('Guardado exportado. Conserva el archivo .sav tal cual.','ok')}
+    catch(e){say('No se pudo crear el archivo de guardado.','er')}};
+  $('s-i').onchange=async e=>{
+    const f=e.target.files[0];e.target.value='';if(!f)return;
+    if(!SV.ok())return say('Este navegador no permite descifrar aquí.','er');
+    if(f.size>2e6)return say('Ese archivo no es un guardado válido.','er');
+    try{const o=await SV.unpack(await f.text()),r=SV.apply(o);fill();refreshTimes();
+      say(`Guardado importado${o.name?' · jugador «'+o.name+'»':''} · ${r.n2+r.n1} marcas en total.`,'ok')}
+    catch(err){say(err.message=='tamper'?'El archivo está dañado o ha sido modificado. No se ha importado nada.':'Ese archivo no es un guardado válido.','er')}};
+})();
+
+/* ---------- inicio ---------- */
+document.title=CONFIG.title;$('ttl').firstChild.textContent=CONFIG.title;
+let first=true;
+function apply(a){
+  GAMES=a.map(norm).sort((x,y)=>x.name.localeCompare(y.name,'es',{numeric:true}));render();
+  if(first){first=false;const g=GAMES.find(x=>x.id==location.hash.slice(1));if(g)open_(g)}
+}
+const c0=cacheGet();if(c0&&c0.length)apply(c0); /* muestra al instante lo último que funcionó… */
+load().then(a=>{ /* …y lo actualiza en cuanto responde la detección */
+  if(a){if(JSON.stringify(a)!=JSON.stringify(c0)){cacheSet(a);apply(a)}}
+  else if(!c0||!c0.length)apply([]);
+});
+</script>
+</body>
+</html>
